@@ -1,42 +1,61 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameEnding : MonoBehaviour
 {
-    public float FadeDuration = 1f;    
-    public float DisplayImageDuration = 1f;
-    public GameObject Player;
-    public CanvasGroup ExitBackgroundImageCanvasGroup;
+    public float fadeDuration = 1f;
+    public float displayImageDuration = 1f;
+    public GameObject player;
+    public CanvasGroup exitBackgroundImageCanvasGroup;
+    public CanvasGroup caughtBackgroundImageCanvasGroup;
 
-    bool _isPlayerAtExit = false;
-    float _timer;
+    bool m_IsPlayerAtExit;
+    bool m_IsPlayerCaught;
+    float m_Timer;
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == Player)
+        if (other.gameObject == player)
         {
-            _isPlayerAtExit = true;
+            m_IsPlayerAtExit = true;
         }
     }
 
-    private void Update()
+    public void CaughtPlayer()
     {
-        if (_isPlayerAtExit)
-        {
-            EndLevel();
-        }
+        m_IsPlayerCaught = true;
     }
 
-    void EndLevel()
+    void Update()
     {
-        _timer += Time.deltaTime;
-
-        ExitBackgroundImageCanvasGroup.alpha = _timer / FadeDuration;
-
-        if (_timer > FadeDuration + DisplayImageDuration)
+        if (m_IsPlayerAtExit)
         {
-            Application.Quit();
+            EndLevel(exitBackgroundImageCanvasGroup, false);
+        }
+        else if (m_IsPlayerCaught)
+        {
+            EndLevel(caughtBackgroundImageCanvasGroup, true);
         }
     }
+
+    void EndLevel(CanvasGroup imageCanvasGroup, bool doRestart)
+    {
+        m_Timer += Time.deltaTime;
+        imageCanvasGroup.alpha = m_Timer / fadeDuration;
+
+        if (m_Timer > fadeDuration + displayImageDuration)
+        {
+            if (doRestart)
+            {
+                SceneManager.LoadScene(0);
+            }
+            else
+            {
+                Application.Quit();
+            }
+        }
+   }
+
 }
