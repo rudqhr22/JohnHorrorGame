@@ -4,53 +4,53 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public Animator Animator => _animator;
-    public Vector3 Movement => _movement;
-    public float TurnSpeed => _turnSpeed;
+    public float turnSpeed = 20f;
 
-    [SerializeField]
-    private Animator _animator;
+    Animator m_Animator;
+    Rigidbody m_Rigidbody;
+    AudioSource m_AudioSource;
+    Vector3 m_Movement;
+    Quaternion m_Rotation = Quaternion.identity;
 
-    [SerializeField]
-    private Vector3 _movement;
-    [SerializeField]
-    private float _turnSpeed;
-    [SerializeField]
-    private Rigidbody _rigidbody;
-    [SerializeField]
-    private Quaternion _rotation = Quaternion.identity;
-
-    private void Awake()
-    {
-        _animator = GetComponent<Animator>();
-        _rigidbody = GetComponent<Rigidbody>();
-    }
     void Start()
     {
-        _turnSpeed = 20.0f;
+        m_Animator = GetComponent<Animator>();
+        m_Rigidbody = GetComponent<Rigidbody>();
+        m_AudioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
-
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        _movement.Set(horizontal, 0f, vertical);
-        _movement.Normalize();
+
+        m_Movement.Set(horizontal, 0f, vertical);
+        m_Movement.Normalize();
 
         bool hasHorizontalInput = !Mathf.Approximately(horizontal, 0f);
         bool hasVerticalInput = !Mathf.Approximately(vertical, 0f);
         bool isWalking = hasHorizontalInput || hasVerticalInput;
-        Animator.SetBool("IsWalking", isWalking);
+        m_Animator.SetBool("IsWalking", isWalking);
 
-        Vector3 desiredForward = Vector3.RotateTowards(transform.forward, _movement, _turnSpeed * Time.deltaTime, 0f);
-        _rotation = Quaternion.LookRotation(desiredForward);
+        if (isWalking)
+        {
+            if (!m_AudioSource.isPlaying)
+            {
+                m_AudioSource.Play();
+            }
+        }
+        else
+        {
+            m_AudioSource.Stop();
+        }
+
+        Vector3 desiredForward = Vector3.RotateTowards(transform.forward, m_Movement, turnSpeed * Time.deltaTime, 0f);
+        m_Rotation = Quaternion.LookRotation(desiredForward);
     }
 
     void OnAnimatorMove()
     {
-        _rigidbody.MovePosition(_rigidbody.position + _movement * _animator.deltaPosition.magnitude);
-        _rigidbody.MoveRotation(_rotation);
+        m_Rigidbody.MovePosition(m_Rigidbody.position + m_Movement * m_Animator.deltaPosition.magnitude);
+        m_Rigidbody.MoveRotation(m_Rotation);
     }
 }
